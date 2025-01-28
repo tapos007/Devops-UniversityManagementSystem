@@ -3,7 +3,7 @@ trigger:
     - master
     - dev
     - qa
-  path:
+  paths:
     include:
       - backend/*
     exclude:
@@ -16,7 +16,7 @@ pr:
     - master
     - dev
     - qa
-  path:
+  paths:
     include:
       - backend/*
     exclude:
