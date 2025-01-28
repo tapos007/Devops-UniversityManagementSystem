@@ -1,0 +1,71 @@
+trigger:
+  branches:
+    - master
+    - dev
+    - qa
+  path:
+    include:
+      - backend/*
+    exclude:
+      - frontend/*
+      - infrastructure/*
+  batch: true
+
+pr:
+  branches:
+    - master
+    - dev
+    - qa
+  path:
+    include:
+      - backend/*
+    exclude:
+      - frontend/*
+      - infrastructure/*
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  buildConfiguration: "Release"
+  dotnetVersion: "8.0.x"
+
+stages:
+  - stage: "Build"
+    displayName: "Build Stage"
+    jobs:
+      - job: "BuildApp"
+        displayName: "Build ASP.NET Core 8 Application"
+        steps:
+          - task: UseDotNet@2
+            displayName: "Install .NET SDK"
+            inputs:
+              version: "$(dotnetVersion)"
+              includePreviewVersions: true
+
+          - script: |
+              echo "##[section]Restoring project dependencies"
+              dotnet restore backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj
+            displayName: "Restore Dependencies"
+
+          - script: |
+              echo "##[section]Building the project"
+              dotnet build backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj --configuration $(buildConfiguration) --no-restore
+            displayName: "Build Project"
+
+          - script: |
+              echo "##[section]Running unit tests"
+              dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal
+            displayName: "Run Tests"
+
+          - script: |
+              echo "##[section]Publishing the application"
+              dotnet publish backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
+            displayName: "Publish Application"
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Build Artifacts"
+            inputs:
+              pathToPublish: "$(Build.ArtifactStagingDirectory)"
+              artifactName: "UniversityManagementSystem.API-build"
+              publishLocation: "Container"
