@@ -26,8 +26,7 @@ pr:
       - infrastructure/*
 
 # Define the pool at the top level
-pool:
-  vmImage: "ubuntu-latest"
+pool: Default
 
 variables:
   buildConfiguration: "Release"
