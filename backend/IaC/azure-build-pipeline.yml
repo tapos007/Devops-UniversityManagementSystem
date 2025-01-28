@@ -1,8 +1,9 @@
 trigger:
   branches:
-    - master
-    - dev
-    - qa
+    include:
+      - master
+      - dev
+      - qa
   paths:
     include:
       - backend/*
@@ -13,9 +14,10 @@ trigger:
 
 pr:
   branches:
-    - master
-    - dev
-    - qa
+    include:
+      - master
+      - dev
+      - qa
   paths:
     include:
       - backend/*
@@ -37,32 +39,42 @@ stages:
       - job: "BuildApp"
         displayName: "Build ASP.NET Core 8 Application"
         steps:
+          # Install the specified .NET SDK version
           - task: UseDotNet@2
             displayName: "Install .NET SDK"
             inputs:
               version: "$(dotnetVersion)"
               includePreviewVersions: true
+              performMultiLevelLookup: true
 
+          # Restore dependencies
           - script: |
               echo "##[section]Restoring project dependencies"
               dotnet restore backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj
             displayName: "Restore Dependencies"
 
+          # Build the project
           - script: |
               echo "##[section]Building the project"
-              dotnet build backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj --configuration $(buildConfiguration) --no-restore
+              dotnet build backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj \
+                --configuration $(buildConfiguration) --no-restore
             displayName: "Build Project"
 
+          # Run unit tests
           - script: |
               echo "##[section]Running unit tests"
-              dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal
+              dotnet test backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj \
+                --configuration $(buildConfiguration) --no-build --verbosity normal
             displayName: "Run Tests"
 
+          # Publish the application
           - script: |
               echo "##[section]Publishing the application"
-              dotnet publish backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
+              dotnet publish backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj \
+                -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
             displayName: "Publish Application"
 
+          # Publish build artifacts
           - task: PublishBuildArtifacts@1
             displayName: "Publish Build Artifacts"
             inputs:
