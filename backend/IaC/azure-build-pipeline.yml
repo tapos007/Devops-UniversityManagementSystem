@@ -34,7 +34,7 @@ variables:
   testProjectLocation: "backend/test/UniversityManagementSystem.Test/UniversityManagementSystem.Test.csproj"
   azureSubscription: "azure-connect"
   artifactName: "myWebsite"
-  zipFile: "UniversityManagementSystem.API.zip"
+  zipFile: "a.zip"
 
 stages:
   - stage: "Build"
