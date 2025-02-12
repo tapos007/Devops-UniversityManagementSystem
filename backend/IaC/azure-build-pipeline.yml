@@ -33,8 +33,8 @@ variables:
   mainProjectLocation: "backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj"
   testProjectLocation: "backend/test/UniversityManagementSystem.Test/UniversityManagementSystem.Test.csproj"
   azureSubscription: "azure-connect"
-  artifactName: "myWebsite" # Name of the artifact in Azure DevOps
-  zipFile: "UniversityManagementSystem.API.zip" # The artifact zip file name
+  artifactName: "myWebsite"
+  zipFile: "UniversityManagementSystem.API.zip"
 
 stages:
   - stage: "Build"
@@ -43,73 +43,73 @@ stages:
       - job: "BuildApp"
         displayName: "Build ASP.NET Core 8 Application"
         steps:
-          # Install the specified .NET SDK version
+          # ✅ Install .NET Core SDK
           - task: UseDotNet@2
             displayName: "Install .NET Core SDK"
             inputs:
-              version: 8.x
+              version: "$(dotnetVersion)"
               performMultiLevelLookup: true
-              includePreviewVersions: true # Required for preview versions
+              includePreviewVersions: true
 
-            # Restore the project
-          # - task: DotNetCoreCLI@2
-          #   displayName: "Restore Dependencies"
-          #   inputs:
-          #     project: $(mainProjectLocation)
-          #     command: "restore"
-          #     feedsToUse: "select"
-          #     vstsFeed: "my-vsts-feed" # A series of numbers and letters
+          # ✅ Restore Dependencies
+          - task: DotNetCoreCLI@2
+            displayName: "Restore Dependencies"
+            inputs:
+              command: "restore"
+              project: "$(mainProjectLocation)"
 
-          # Build the project
+          # ✅ Build the Project
           - task: DotNetCoreCLI@2
             displayName: "dotnet build $(buildConfiguration)"
             inputs:
               command: "build"
-              project: $(mainProjectLocation)
+              project: "$(mainProjectLocation)"
               arguments: "--configuration $(buildConfiguration)"
 
-          # Test Code Run the project
+          # ✅ Run Unit Tests
           - task: DotNetCoreCLI@2
-            displayName: "run test code"
+            displayName: "Run Unit Tests"
             inputs:
               command: test
-              project: $(testProjectLocation)
-              projects: "**/*Tests/*.csproj"
+              project: "$(testProjectLocation)"
               arguments: "--configuration $(buildConfiguration)"
 
+          # ✅ Publish the Project
           - task: DotNetCoreCLI@2
-            displayName: "publish project"
+            displayName: "Publish Project"
             inputs:
               command: publish
-              publishWebProjects: True
-              project: $(mainProjectLocation)
-              arguments: "--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)"
-              zipAfterPublish: True
+              publishWebProjects: false
+              project: "$(mainProjectLocation)"
+              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)"
+              zipAfterPublish: true
 
-            # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
+          # ✅ Upload Artifact
           - task: PublishPipelineArtifact@1
-            displayName: "genreate artifact file"
+            displayName: "Generate Artifact File"
             inputs:
               targetPath: "$(Build.ArtifactStagingDirectory)"
-              artifactName: "myWebsite"
+              artifactName: "$(artifactName)"
 
   - stage: "Dev"
-    displayName: "Deploy to the dev environment"
+    displayName: "Deploy to the Dev Environment"
     dependsOn: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'dev'))
     jobs:
-      # ✅ Download Artifact
-      - task: DownloadBuildArtifacts@0
-        displayName: "Download Artifact"
-        inputs:
-          buildType: "current"
-          artifactName: "$(artifactName)"
-          downloadPath: "$(Pipeline.Workspace)"
-
-        # ✅ Deploy ZIP to Azure App Service
-      - task: AzureWebApp@1
+      - job: "Deploy"
         displayName: "Deploy to Azure App Service"
-        inputs:
-          azureSubscription: "$(azureSubscription)"
-          appName: "university-management-system-dev"
-          package: "$(Pipeline.Workspace)/$(artifactName)/$(zipFile)"
+        steps:
+          # ✅ Download Artifact Correctly
+          - task: DownloadPipelineArtifact@2
+            displayName: "Download Artifact"
+            inputs:
+              artifact: "$(artifactName)"
+              path: "$(Pipeline.Workspace)/$(artifactName)"
+
+          # ✅ Deploy ZIP to Azure App Service
+          - task: AzureWebApp@1
+            displayName: "Deploy to Azure App Service"
+            inputs:
+              azureSubscription: "$(azureSubscription)"
+              appName: "university-management-system-dev"
+              package: "$(Pipeline.Workspace)/$(artifactName)/$(zipFile)"
