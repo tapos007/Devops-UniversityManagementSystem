@@ -22,7 +22,7 @@ public class CalculatorTests
         var calculator = new Calculator();
 
         // Act
-        var result = calculator.Add(5, 3);
+        var result = calculator.Subtract(5, 3);
 
         // Assert
         Assert.Equal(2, result);
@@ -32,4 +32,5 @@ public class CalculatorTests
 public class Calculator
 {
     public int Add(int a, int b) => a + b;
+    public int Subtract(int a, int b) => a - b;
 }
