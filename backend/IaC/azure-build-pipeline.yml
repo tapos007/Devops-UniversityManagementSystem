@@ -30,6 +30,8 @@ pool: Default
 variables:
   buildConfiguration: "Release"
   dotnetVersion: "8.0.x"
+  mainProjectLocation: "backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj"
+  testProjectLocation: "backend/test/UniversityManagementSystem.Test/UniversityManagementSystem.Test.csproj"
 
 stages:
   - stage: "Build"
@@ -40,43 +42,47 @@ stages:
         steps:
           # Install the specified .NET SDK version
           - task: UseDotNet@2
-            displayName: "Install .NET SDK"
+            displayName: "Install .NET Core SDK"
             inputs:
-              version: "$(dotnetVersion)"
-              includePreviewVersions: true
+              version: 8.x
               performMultiLevelLookup: true
+              includePreviewVersions: true # Required for preview versions
 
-          # Restore dependencies
-          - script: |
-              echo "##[section]Restoring project dependencies"
-              dotnet restore backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj
+            # Restore the project
+          - task: DotNetCoreCLI@2
             displayName: "Restore Dependencies"
-
-          # Build the project
-          - script: |
-              echo "##[section]Building the project"
-              dotnet build backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj \
-                --configuration $(buildConfiguration) --no-restore
-            displayName: "Build Project"
-
-          # Run unit tests
-          - script: |
-              echo "##[section]Running unit tests"
-              dotnet test backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj \
-                --configuration $(buildConfiguration) --no-build --verbosity normal
-            displayName: "Run Tests"
-
-          # Publish the application
-          - script: |
-              echo "##[section]Publishing the application"
-              dotnet publish backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj \
-                -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
-            displayName: "Publish Application"
-
-          # Publish build artifacts
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Build Artifacts"
             inputs:
-              pathToPublish: "$(Build.ArtifactStagingDirectory)"
-              artifactName: "UniversityManagementSystem.API-build"
-              publishLocation: "Container"
+              project: $(mainProjectLocation)
+              command: "restore"
+              feedsToUse: "select"
+              vstsFeed: "my-vsts-feed" # A series of numbers and letters
+
+            # Build the project
+          - task: DotNetCoreCLI@2
+            displayName: "dotnet build $(buildConfiguration)"
+            inputs:
+              command: "build"
+              project: $(mainProjectLocation)
+              arguments: "--configuration $(buildConfiguration) --no-restore"
+
+          # Test Code Run the project
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: test
+              project: $(testProjectLocation)
+              projects: "**/*Tests/*.csproj"
+              arguments: "--configuration $(buildConfiguration)"
+
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: publish
+              publishWebProjects: True
+              project: $(mainProjectLocation)
+              arguments: "--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)"
+              zipAfterPublish: True
+
+            # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: "$(Build.ArtifactStagingDirectory)"
+              artifactName: "myWebsite"

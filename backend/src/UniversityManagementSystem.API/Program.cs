@@ -14,6 +14,23 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 var app = builder.Build();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.Migrate(); // Apply migrations
+    }
+    catch (Exception ex)
+    {
+        // Log error (you can use Serilog, ILogger, etc.)
+        Console.WriteLine($"An error occurred while migrating the database: {ex.Message}");
+    }
+}
+
+
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
