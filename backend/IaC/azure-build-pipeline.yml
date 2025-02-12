@@ -32,6 +32,9 @@ variables:
   dotnetVersion: "8.0.x"
   mainProjectLocation: "backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj"
   testProjectLocation: "backend/test/UniversityManagementSystem.Test/UniversityManagementSystem.Test.csproj"
+  azureSubscription: "azure-connect"
+  artifactName: "myWebsite" # Name of the artifact in Azure DevOps
+  zipFile: "UniversityManagementSystem.API.zip" # The artifact zip file name
 
 stages:
   - stage: "Build"
@@ -89,3 +92,24 @@ stages:
             inputs:
               targetPath: "$(Build.ArtifactStagingDirectory)"
               artifactName: "myWebsite"
+
+  - stage: "Dev"
+    displayName: "Deploy to the dev environment"
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'dev'))
+    jobs:
+      # ✅ Download Artifact
+      - task: DownloadBuildArtifacts@0
+        displayName: "Download Artifact"
+        inputs:
+          buildType: "current"
+          artifactName: "$(artifactName)"
+          downloadPath: "$(Pipeline.Workspace)"
+
+        # ✅ Deploy ZIP to Azure App Service
+      - task: AzureWebApp@1
+        displayName: "Deploy to Azure App Service"
+        inputs:
+          azureSubscription: "$(azureSubscription)"
+          appName: "university-management-system-dev"
+          package: "$(Pipeline.Workspace)/$(artifactName)/$(zipFile)"
