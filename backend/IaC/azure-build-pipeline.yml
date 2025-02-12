@@ -49,24 +49,25 @@ stages:
               includePreviewVersions: true # Required for preview versions
 
             # Restore the project
-          - task: DotNetCoreCLI@2
-            displayName: "Restore Dependencies"
-            inputs:
-              project: $(mainProjectLocation)
-              command: "restore"
-              feedsToUse: "select"
-              vstsFeed: "my-vsts-feed" # A series of numbers and letters
+          # - task: DotNetCoreCLI@2
+          #   displayName: "Restore Dependencies"
+          #   inputs:
+          #     project: $(mainProjectLocation)
+          #     command: "restore"
+          #     feedsToUse: "select"
+          #     vstsFeed: "my-vsts-feed" # A series of numbers and letters
 
-            # Build the project
+          # Build the project
           - task: DotNetCoreCLI@2
             displayName: "dotnet build $(buildConfiguration)"
             inputs:
               command: "build"
               project: $(mainProjectLocation)
-              arguments: "--configuration $(buildConfiguration) --no-restore"
+              arguments: "--configuration $(buildConfiguration)"
 
           # Test Code Run the project
           - task: DotNetCoreCLI@2
+            displayName: "run test code"
             inputs:
               command: test
               project: $(testProjectLocation)
@@ -74,6 +75,7 @@ stages:
               arguments: "--configuration $(buildConfiguration)"
 
           - task: DotNetCoreCLI@2
+            displayName: "publish project"
             inputs:
               command: publish
               publishWebProjects: True
@@ -83,6 +85,7 @@ stages:
 
             # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
           - task: PublishPipelineArtifact@1
+            displayName: "genreate artifact file"
             inputs:
               targetPath: "$(Build.ArtifactStagingDirectory)"
               artifactName: "myWebsite"
