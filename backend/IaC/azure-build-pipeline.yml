@@ -110,6 +110,8 @@ stages:
           - task: AzureWebApp@1
             displayName: "Deploy to Azure App Service"
             inputs:
+              appType: "webAppLinux"
+              resourceGroupName: "devops-learning-dev-rg"
               azureSubscription: "$(azureSubscription)"
               appName: "university-management-system-dev"
               package: "$(Pipeline.Workspace)/$(artifactName)/$(zipFile)"
