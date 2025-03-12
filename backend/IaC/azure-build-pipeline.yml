@@ -104,6 +104,14 @@ stages:
               artifact: "mybackend"
               path: "$(Pipeline.Workspace)"
 
+          # ✅ Debug - List Downloaded Files
+          - task: Bash@3
+            displayName: "List contents of the artifact"
+            inputs:
+              targetType: inline
+              script: |
+                ls -R "$(Pipeline.Workspace)/mybackend"
+
           # ✅ Deploy ZIP to Azure App Service
           - task: AzureWebApp@1
             displayName: "Deploy to Azure App Service"
@@ -113,4 +121,4 @@ stages:
               deployToSlotOrASE: true
               appName: "university-management-system-dev"
               appType: "webAppLinux" # ✅ Use 'webApp' for Linux-based App Services
-              package: "$(Pipeline.Workspace)/*.zip"
+              package: "$(Pipeline.Workspace)/mybackend/*.zip"
