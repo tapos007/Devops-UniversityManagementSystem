@@ -79,14 +79,14 @@ stages:
               command: publish
               publishWebProjects: True
               project: "$(mainProjectLocation)"
-              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)"
+              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish"
               zipAfterPublish: True
 
           # ✅ Upload Artifact
           - task: PublishPipelineArtifact@1
             displayName: "Generate Artifact File"
             inputs:
-              targetPath: "$(Build.ArtifactStagingDirectory)"
+              targetPath: "$(Build.ArtifactStagingDirectory)/public"
               artifactName: "mybackend"
 
   - stage: "Dev"
@@ -103,7 +103,7 @@ stages:
             inputs:
               source: "current"
               artifact: "mybackend"
-              path: "$(Pipeline.Workspace)"
+              path: "$(Pipeline.Workspace)/mybackend"
 
           # ✅ Deploy ZIP to Azure App Service
           - task: AzureWebApp@1
