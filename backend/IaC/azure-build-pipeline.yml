@@ -33,8 +33,6 @@ variables:
   mainProjectLocation: "backend/src/UniversityManagementSystem.API/UniversityManagementSystem.API.csproj"
   testProjectLocation: "backend/test/UniversityManagementSystem.Test/UniversityManagementSystem.Test.csproj"
   azureSubscription: "azure-connect"
-  artifactName: "backend-api"
-  zipFile: "backend-api.zip"
 
 stages:
   - stage: "Build"
@@ -82,23 +80,14 @@ stages:
               publishWebProjects: false
               project: "$(mainProjectLocation)"
               arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/backend-api"
-
-          # ✅ Manually Create ZIP Archive (Ensures correct output)
-          - task: ArchiveFiles@2
-            displayName: "Create ZIP Archive"
-            inputs:
-              rootFolderOrFile: "$(Build.ArtifactStagingDirectory)/backend-api"
-              includeRootFolder: false
-              archiveType: "zip"
-              archiveFile: "$(Build.ArtifactStagingDirectory)/backend-api.zip"
-              replaceExistingArchive: true
+              zipAfterPublish: True
 
           # ✅ Upload Artifact
           - task: PublishPipelineArtifact@1
             displayName: "Generate Artifact File"
             inputs:
-              targetPath: "$(Build.ArtifactStagingDirectory)/backend-api.zip"
-              artifactName: "$(artifactName)"
+              targetPath: "$(Build.ArtifactStagingDirectory)/backend-api"
+              artifactName: "mybackend"
 
   - stage: "Dev"
     displayName: "Deploy to the Dev Environment"
@@ -112,7 +101,7 @@ stages:
           - task: DownloadPipelineArtifact@2
             displayName: "Download Artifact"
             inputs:
-              artifact: "$(artifactName)"
+              artifact: "mybackend"
               path: "$(Pipeline.Workspace)/backend-api"
 
           # ✅ Deploy ZIP to Azure App Service
