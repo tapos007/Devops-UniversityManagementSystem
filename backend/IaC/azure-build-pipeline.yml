@@ -110,6 +110,7 @@ stages:
             inputs:
               azureSubscription: "$(azureSubscription)"
               resourceGroupName: "devops-dev"
+              deployToSlotOrASE: true
               appName: "university-management-system-dev"
               appType: "webAppLinux" # ✅ Use 'webApp' for Linux-based App Services
-              package: "$(Pipeline.Workspace)/backend-api.zip"
+              package: "$(Pipeline.Workspace)/backend-api/backend-api.zip"
