@@ -105,9 +105,13 @@ stages:
               artifact: "mybackend"
               path: "$(Pipeline.Workspace)/mybackend"
 
-          - script: |
-            echo "Pipeline.Workspace: $(Pipeline.Workspace)" ls -R $(Pipeline.Workspace)
+          - task: Bash@3
             displayName: "Print Pipeline.Workspace and List Files"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "Pipeline.Workspace: $(Pipeline.Workspace)"
+                ls -R $(Pipeline.Workspace)
 
           # ✅ Deploy ZIP to Azure App Service
           - task: AzureWebApp@1
