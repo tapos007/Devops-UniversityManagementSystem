@@ -111,5 +111,5 @@ stages:
               azureSubscription: "$(azureSubscription)"
               resourceGroupName: "devops-dev"
               appName: "university-management-system-dev"
-              appType: "webApp" # ✅ Use 'webApp' for Linux-based App Services
+              appType: "webAppLinux" # ✅ Use 'webApp' for Linux-based App Services
               package: "$(Pipeline.Workspace)/backend-api/backend-api.zip"
