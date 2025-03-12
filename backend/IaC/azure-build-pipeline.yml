@@ -79,14 +79,14 @@ stages:
               command: publish
               publishWebProjects: True
               project: "$(mainProjectLocation)"
-              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/publish"
+              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/api"
               zipAfterPublish: True
 
           # ✅ Upload Artifact
           - task: PublishPipelineArtifact@1
             displayName: "Generate Artifact File"
             inputs:
-              targetPath: "$(Build.ArtifactStagingDirectory)/public"
+              targetPath: "$(Build.ArtifactStagingDirectory)"
               artifactName: "mybackend"
 
   - stage: "Dev"
