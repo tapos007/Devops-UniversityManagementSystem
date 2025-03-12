@@ -81,15 +81,15 @@ stages:
               command: publish
               publishWebProjects: false
               project: "$(mainProjectLocation)"
-              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)"
+              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/backend-api"
               zipAfterPublish: true
 
           # ✅ Upload Artifact
           - task: PublishPipelineArtifact@1
             displayName: "Generate Artifact File"
             inputs:
-              targetPath: "$(Build.ArtifactStagingDirectory)"
-              artifactName: "$(artifactName)"
+              targetPath: "$(Build.ArtifactStagingDirectory)/backend-api.zip"
+              artifactName: "backend-api"
 
   - stage: "Dev"
     displayName: "Deploy to the Dev Environment"
@@ -99,7 +99,7 @@ stages:
       - job: "Deploy"
         displayName: "Deploy to Azure App Service"
         steps:
-          # ✅ Download Artifact Correctly
+          # ✅ Download the Published Artifact
           - task: DownloadPipelineArtifact@2
             displayName: "Download Artifact"
             inputs:
@@ -110,8 +110,8 @@ stages:
           - task: AzureWebApp@1
             displayName: "Deploy to Azure App Service"
             inputs:
-              appType: "webAppLinux"
-              resourceGroupName: "devops-learning-dev-rg"
               azureSubscription: "$(azureSubscription)"
+              resourceGroupName: "devops-dev"
               appName: "university-management-system-dev"
-              package: "$(Pipeline.Workspace)/$(artifactName)/$(zipFile)"
+              appType: "webApp" # ✅ Use 'webApp' for Linux-based App Services
+              package: "$(Pipeline.Workspace)/$(artifactName)/backend-api.zip"
