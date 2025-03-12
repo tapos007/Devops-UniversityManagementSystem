@@ -112,4 +112,4 @@ stages:
               resourceGroupName: "devops-dev"
               appName: "university-management-system-dev"
               appType: "webAppLinux" # ✅ Use 'webApp' for Linux-based App Services
-              package: "$(Pipeline.Workspace)/backend-api/backend-api.zip"
+              package: "$(Pipeline.Workspace)/backend-api.zip"
